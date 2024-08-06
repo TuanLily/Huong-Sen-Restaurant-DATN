@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import ImageUploader from 'react-images-upload';
-import './UploadImage.css'
+import './uploadImage.css'
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { storage } from '../../Config/Client/Firebase';
 

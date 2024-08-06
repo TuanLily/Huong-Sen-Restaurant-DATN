@@ -67,16 +67,28 @@ export default function Menu() {
                         <div className="col-lg-6" key={product.id}>
                           <div className="d-flex align-items-center">
                             <img className="flex-shrink-0 img-fluid rounded" src={product.image} alt="" style={{ width: "80px" }} />
-                            <div className="w-100 d-flex flex-column text-start ps-4">
-                              <h5 className="d-flex justify-content-between border-bottom pb-2">
-                                <span>{product.name}</span>
-                                <span className="text-primary">{formatPrice(product.sale_price)}</span>
-                              </h5>
-                              <div className="d-flex justify-content-between">
-                                <small className="fst-italic">{product.description}</small>
-                                <span className="text-danger text-decoration-line-through">{formatPrice(product.price)}</span>
+                            {product.sale_price > 0 ? (
+                              <div className="w-100 d-flex flex-column text-start ps-4">
+                                <h5 className="d-flex justify-content-between border-bottom pb-2">
+                                  <span>{product.name}</span>
+                                  <span className="text-primary">{formatPrice(product.price - product.sale_price)}</span>
+                                </h5>
+                                <div className="d-flex justify-content-between">
+                                  <small className="fst-italic">{product.description}</small>
+                                  <span className="text-danger text-decoration-line-through">{formatPrice(product.price)}</span>
+                                </div>
                               </div>
-                            </div>
+                            ) : (
+                              <div className="w-100 d-flex flex-column text-start ps-4">
+                                <h5 className="d-flex justify-content-between border-bottom pb-2">
+                                  <span>{product.name}</span>
+                                  <span className="text-primary">{formatPrice(product.price)}</span>
+                                </h5>
+                                <div className="d-flex justify-content-between">
+                                  <small className="fst-italic">{product.description}</small>
+                                </div>
+                              </div>
+                            )}
                           </div>
                         </div>
                       ))}
