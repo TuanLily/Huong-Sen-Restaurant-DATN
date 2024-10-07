@@ -9,7 +9,8 @@ import contactReducer from "./ContactReducers";
 import blogDetailReducer from "./BlogDetailReducers";
 import promotionReducer from "./PromotionReducers";
 import CommentBlogReducer from './CommentBlogReducers';
-
+import MyBookingReducer from './MyBookingReducers';
+import ReservationDetailReducer from './ReservationDetailOfTrangReducers';
 
 const rootReducer = combineReducers({
     auth: authReducer,
@@ -22,7 +23,9 @@ const rootReducer = combineReducers({
     blog_detail: blogDetailReducer,
     promotion: promotionReducer,
     comment_blog: CommentBlogReducer,
-    blog_detail: blogDetailReducer
+    blog_detail: blogDetailReducer,
+    my_booking: MyBookingReducer,
+    my_booking_detail: ReservationDetailReducer,
 });
 
 export default rootReducer;

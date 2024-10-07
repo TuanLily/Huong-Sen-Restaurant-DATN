@@ -43,7 +43,7 @@ const publicClientRoutes = [
     { path: ClientConfig.routes.confirm, component: Confirm },
     { path: ClientConfig.routes.policy, component: Policy },
     { path: ClientConfig.routes.reservationGuide, component: ReservationGuide },
-    { path: ClientConfig.routes.myBookings, component: MyBooking }
+    { path: ClientConfig.routes.myBookings, component: MyBooking },
 ];
 
 

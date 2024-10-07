@@ -10,6 +10,8 @@ export const API_DATA = {
   register: "/auth/register",
   forgotPassword: "/auth/forgot-password",
   changePassword: "/auth/change-password",
+  reservations_client: '/reservations_t_admin',
+  myBooking: '/myBooking',
 
   blog: "/public/blogs",
   contact: "/contact",

@@ -8,6 +8,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { checkAuthStatus } from './Actions/AuthActions';
 import Spinner from './Components/Client/Spinner';
 import { useEffect, useState } from 'react';
+import MyBookingDetail from './Pages/Client/MyBookingDetail';
 
 function ProtectedRoute({ children }) {
   const dispatch = useDispatch();
@@ -115,6 +116,8 @@ function App() {
             }
           })}
       </Route>
+
+      <Route path="my-bookings/detail/:id" element={<MyBookingDetail />} />
 
       {/* 404 Route */}
       <Route path="*" element={<NotFound />} />
