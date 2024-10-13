@@ -5,6 +5,7 @@ import { fetchPromotion } from "../../Actions/PromotionActions";
 import { addNewReservation } from "../../Actions/ReservationActions";
 import { addNewReservationDetail } from "../../Actions/Reservation_detailActions";
 import { useNavigate } from "react-router-dom";
+import axios from 'axios';
 
 
 export default function Pay() {
@@ -131,32 +132,26 @@ export default function Pay() {
 
   const handleCompleteBooking = async () => {
     try {
+      // Tính toán tiền cọc (30% của tổng giá tiền)
+      const depositAmount = finalTotal * 0.3;
+  
       // Tạo dữ liệu đơn hàng để gửi lên server
       const orderData = {
         ...customerInfo,
-        orderId,
-        tableNumber,
-        total_amount: finalTotal, // Lưu tổng thanh toán
+        total_amount: finalTotal,
         discount,
-        promotion_id: selectedPromotion || null, // Thiết lập promotion_id là null nếu không có khuyến mãi nào được chọn
+        promotion_id: selectedPromotion || null,
+        deposit: depositAmount, // Thêm tiền cọc vào dữ liệu
       };
-
-      // Log tổng thanh toán và ID khuyến mãi ra console
-      console.log("Final Total Payment:", finalTotal);
-      console.log("Selected Promotion ID:", selectedPromotion);
-
+  
       // Gửi dữ liệu đặt bàn lên server
       const reservation = await dispatch(addNewReservation(orderData));
-
-      // Xóa dữ liệu trong local storage sau khi đặt hàng thành công
-      localStorage.removeItem("customerInfo");
-      localStorage.removeItem("selectedProducts");
-
-      // Gửi chi tiết đơn đặt hàng cho từng sản phẩm đã chọn
+  
+      // Gửi chi tiết đơn đặt hàng
       await Promise.all(
         Object.values(selectedProducts).map((product) => {
           const reservationDetail = {
-            reservation_id: reservation.id, // Sử dụng ID đơn đặt hàng vừa tạo
+            reservation_id: reservation.id,
             product_id: product.id,
             quantity: product.quantity,
             price: product.price,
@@ -164,18 +159,28 @@ export default function Pay() {
           return dispatch(addNewReservationDetail(reservationDetail));
         })
       );
-
-      alert("Đơn hàng của bạn đã được xác nhận!");
-
-      // Chuyển trang sang trang xác nhận
-      navigate("/confirm");
+  
+      // Sau khi gửi dữ liệu thành công, xóa dữ liệu trong localStorage
+      localStorage.clear(); // Hoặc xóa các key cụ thể như localStorage.removeItem('selectedProducts');
+  
+      // Tạo yêu cầu thanh toán MOMO
+      const momoResponse = await axios.post('http://localhost:6969/api/public/payment', {
+        reservationId: reservation.id,
+        amount: depositAmount, // Gửi tiền cọc để thanh toán
+      });
+  
+      if (momoResponse.data && momoResponse.data.payUrl) {
+        // Điều hướng người dùng đến URL thanh toán MOMO
+        window.location.href = momoResponse.data.payUrl;
+      }
+  
     } catch (error) {
       console.error("Lỗi khi xác nhận đơn hàng:", error);
       alert("Có lỗi xảy ra khi đặt hàng, vui lòng thử lại.");
     }
   };
-
-
+  
+  
 
   return (
     <div>
