@@ -6,6 +6,7 @@ import { fetchTable } from "../../Actions/TableActions";
 import { addNewReservation } from "../../Actions/ReservationActions";
 import { addNewReservationDetail } from "../../Actions/Reservation_detailActions";
 import { useNavigate } from "react-router-dom";
+import axios from 'axios';
 
 export default function Pay() {
   const navigate = useNavigate();
@@ -96,29 +97,29 @@ export default function Pay() {
   };
 
   // Hàm để gán bàn đúng dựa trên kích thước bữa tiệc và tính khả dụng
-const assignTable = (party_size) => {
-  // Lọc các bàn phù hợp với sức chứa và còn trống
-  const availableTables = tables
-    .filter((table) => {
-      // Điều chỉnh logic này nếu trạng thái của bạn trong cơ sở dữ liệu là số (tinyint 1 cho bàn trống)
-      if (party_size <= 2) {
-        return table.capacity === 2 && table.status === 1;  // Giả định rằng status = 1 nghĩa là bàn trống
-      } else if (party_size <= 4) {
-        return table.capacity === 4 && table.status === 1;
-      } else if (party_size <= 6) {
-        return table.capacity === 6 && table.status === 1;
-      } else if (party_size <= 8) {
-        return table.capacity === 8 && table.status === 1;
-      } else {
-        return table.capacity > 8 && table.status === 1;
-      }
-    })
-    .sort((a, b) => a.number - b.number);  // Sắp xếp theo 'number'
+  const assignTable = (party_size) => {
+    // Lọc các bàn phù hợp với sức chứa và còn trống
+    const availableTables = tables
+      .filter((table) => {
+        // Điều chỉnh logic này nếu trạng thái của bạn trong cơ sở dữ liệu là số (tinyint 1 cho bàn trống)
+        if (party_size <= 2) {
+          return table.capacity === 2 && table.status === 1;  // Giả định rằng status = 1 nghĩa là bàn trống
+        } else if (party_size <= 4) {
+          return table.capacity === 4 && table.status === 1;
+        } else if (party_size <= 6) {
+          return table.capacity === 6 && table.status === 1;
+        } else if (party_size <= 8) {
+          return table.capacity === 8 && table.status === 1;
+        } else {
+          return table.capacity > 8 && table.status === 1;
+        }
+      })
+      .sort((a, b) => a.number - b.number);  // Sắp xếp theo 'number'
 
-  // Trả về bàn đầu tiên còn trống hoặc null nếu không có bàn nào trống
-  return availableTables.length > 0 ? availableTables[0] : null;
-};
-  
+    // Trả về bàn đầu tiên còn trống hoặc null nếu không có bàn nào trống
+    return availableTables.length > 0 ? availableTables[0] : null;
+  };
+
 
   const total_amount = calculateTotalPrice();
   const { discountedTotal, finalTotal } = calculateFinalTotal(total_amount);
@@ -160,6 +161,8 @@ const assignTable = (party_size) => {
 
   const handleCompleteBooking = async () => {
     try {
+      const depositAmount = finalTotal * 0.3;
+
       // Create order data to send to the server
       const orderData = {
         ...customerInfo,
@@ -168,8 +171,10 @@ const assignTable = (party_size) => {
         table_id: tableId, // Store table_id
         total_amount: finalTotal, // Store final total amount
         discount,
+        deposit: depositAmount,
         promotion_id: selectedPromotion || null, // Set promotion_id as null if no promotion is selected
       };
+
 
       console.log("Final Total Payment:", finalTotal);
       console.log("Selected Promotion ID:", selectedPromotion);
@@ -194,13 +199,23 @@ const assignTable = (party_size) => {
         })
       );
 
-      alert("Đơn hàng của bạn đã được xác nhận!");
+      // Sau khi gửi dữ liệu thành công, xóa dữ liệu trong localStorage
+      localStorage.clear(); // Hoặc xóa các key cụ thể như localStorage.removeItem('selectedProducts');
 
-      // Redirect to confirmation page
-      navigate("/confirm");
+      // Tạo yêu cầu thanh toán MOMO
+      const momoResponse = await axios.post('http://localhost:6969/api/public/payment', {
+        reservationId: reservation.id,
+        amount: depositAmount, // Gửi tiền cọc để thanh toán
+      });
+
+      if (momoResponse.data && momoResponse.data.payUrl) {
+        // Điều hướng người dùng đến URL thanh toán MOMO
+        window.location.href = momoResponse.data.payUrl;
+      }
+
     } catch (error) {
-      console.error("Error confirming the reservation:", error);
-      alert("An error occurred while booking. Please try again.");
+      console.error("Lỗi khi xác nhận đơn hàng:", error);
+      alert("Có lỗi xảy ra khi đặt hàng, vui lòng thử lại.");
     }
   };
 
