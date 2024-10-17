@@ -1,18 +1,22 @@
 import React, { useState, useEffect } from "react";
-import { Link, NavLink, Navigate, useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { Link, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import { useForm } from "react-hook-form";
 import { addNewReservation } from "../../Actions/ReservationActions";
+import { fetchTable } from "../../Actions/TableActions";
 
 export default function Booking() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const tables = useSelector((state) => state.table.table);
+
   const {
     register,
     handleSubmit,
     setValue,
     formState: { errors },
   } = useForm({
+      reservation_code:"",
       fullname: "",
       email: "",
       reservation_date: "",
@@ -21,9 +25,14 @@ export default function Booking() {
       note: "",
       status: 1,
   });
+
+  const [tableId, setTableId] = useState(null); // Store table_id
+  const [tableNumber, setTableNumber] = useState("");
+  const [orderId, setOrderId] = useState("");
   
 
   useEffect(() => {
+    dispatch(fetchTable());
     const savedData = localStorage.getItem("customerInfo");
     if (savedData) {
       const customerInfo = JSON.parse(savedData);
@@ -31,7 +40,49 @@ export default function Booking() {
         setValue(key, customerInfo[key]);
       });
     }
-  }, [setValue]);
+    setOrderId(generateOrderId());
+  }, [dispatch, setValue]);
+  
+  const generateOrderId = () => {
+    const randomNumber = Math.floor(1000 + Math.random() * 9000);
+    const orderId = `HS-${randomNumber}`;
+    localStorage.setItem("orderId", orderId); // Lưu mã orderId vào localStorage
+    return orderId;
+  };
+
+  useEffect(() => {
+    const savedData = JSON.parse(localStorage.getItem("customerInfo"));
+    if (savedData?.party_size && tables.length > 0) {
+      const assignedTable = assignTable(savedData.party_size);
+      if (assignedTable) {
+        setTableId(assignedTable.id); // Store table_id
+        setTableNumber(assignedTable.number); // Store table number
+      } else {
+        setTableNumber("Không có bàn trống");
+      }
+    }
+  }, [tables]);
+
+   // Hàm để gán bàn đúng dựa trên kích thước bữa tiệc và tính khả dụng
+   const assignTable = (party_size) => {
+    const availableTables = tables
+      .filter((table) => {
+        if (party_size <= 2) {
+          return table.capacity === 2 && table.status === 1;
+        } else if (party_size <= 4) {
+          return table.capacity === 4 && table.status === 1;
+        } else if (party_size <= 6) {
+          return table.capacity === 6 && table.status === 1;
+        } else if (party_size <= 8) {
+          return table.capacity === 8 && table.status === 1;
+        } else {
+          return table.capacity > 8 && table.status === 1;
+        }
+      })
+      .sort((a, b) => a.number - b.number);
+
+    return availableTables.length > 0 ? availableTables[0] : null;
+  };
 
   // Lưu dữ liệu hiện tại của form vào local storage khi nhấn "Tiếp theo"
   const handleNext = (data) => {
@@ -47,14 +98,23 @@ export default function Booking() {
   const onSubmit = async (data) => {
     localStorage.setItem("customerInfo", JSON.stringify(data));
 
-    // Gửi dữ liệu lên server
+    if (!tableId) {
+      alert("Không có bàn trống phù hợp với số lượng người!");
+      return;
+    }
+
     try {
-      await dispatch(addNewReservation(data));
+      const reservationData = {
+        ...data,
+        table_id: tableId,
+      };
+
+      await dispatch(addNewReservation(reservationData));
       alert("Đặt bàn thành công!");
-      localStorage.removeItem("customerInfo"); // Xóa dữ liệu trong local storage
+      localStorage.removeItem("customerInfo"); // Clear localStorage after successful reservation
       navigate("/confirm");
     } catch (error) {
-      console.error("Error completing booking:", error);
+      console.error("Có vấn đề khi đặt bàn:", error);
       alert("Có lỗi xảy ra, vui lòng thử lại!");
     }
   };
