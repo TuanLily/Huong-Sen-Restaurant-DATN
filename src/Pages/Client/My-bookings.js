@@ -121,8 +121,8 @@ export default function MyBooking() {
   };
 
   const statusMapping = {
-    1: { text: 'Chờ xác nhận', class: 'badge bg-warning' },    
-    2: { text: 'Chờ thanh toán cọc', class: 'badge bg-info' },
+    1: { text: 'Chờ thanh toán cọc', class: 'badge bg-warning' },    
+    2: { text: 'Hết hạn thanh toán cọc', class: 'badge bg-info' },
     3: { text: 'Đã thanh toán cọc', class: 'badge bg-primary' },     
     0: { text: 'Hủy đơn', class: 'badge bg-danger' },             
     4: { text: 'Chờ thanh toán toàn bộ đơn', class: 'badge bg-success' },
@@ -154,7 +154,7 @@ export default function MyBooking() {
       <div className="container mb-4">
         <div className="card shadow-sm">
           <div className="card-body">
-            <div className="row g-3">
+            <div className="row g-3">  
               <div className="col-md-3">
                 <input type="text" className="form-control" placeholder="Tìm theo tên" value={nameSearch} onChange={handleNameSearch} />
               </div>               
@@ -168,8 +168,8 @@ export default function MyBooking() {
                 <select className="form-control mr-2" value={statusSearch} onChange={handleStatusSearch}>
                   <option value="">Trạng thái</option>
                   <option value="0">Đã hủy</option>
-                  <option value="1">Chờ xác nhận</option>
-                  <option value="2">Chờ thanh toán cọc</option>
+                  <option value="1">Chờ thanh toán cọc</option>
+                  <option value="2">Hết hạn thanh toán cọc</option>
                   <option value="3">Đã thanh toán cọc</option>
                   <option value="4">Chờ thanh toán toàn bộ đơn</option>
                   <option value="5">Hoàn thành đơn</option>
@@ -212,7 +212,7 @@ export default function MyBooking() {
                             <strong>Email:</strong> {booking.email}
                           </p>
                           <p className="mb-2">
-                            <strong>Số bàn:</strong> {booking.tableName ? booking.tableName : 'Chưa có'}
+                            <strong>Mã hóa đơn:</strong> {booking.reservation_code ? booking.reservation_code : 'Chưa rõ'}
                           </p>
                         </div>
                         <div style={{ flex: '1 1 30%' }}>
@@ -227,6 +227,9 @@ export default function MyBooking() {
                           <p className="mb-2">
                             <strong>Ngày đặt:</strong> {booking.created_at.substring(0, 10)}
                           </p>
+                          <p className="mb-2">
+                            <strong>Số bàn:</strong> {booking.tableName ? booking.tableName : 'Chưa có'}
+                          </p>
                         </div>
                       </div>
 
@@ -236,14 +239,19 @@ export default function MyBooking() {
                           <strong>Số tiền còn lại:</strong> {formatCurrency(booking.total_amount ? booking.deposit ? booking.total_amount - booking.deposit : booking.total_amount : 0)}
                         </p>
                         <div>
-                          {statusInfo.text == 'Chờ xác nhận' && (
+                          {(statusInfo.text == 'Chờ thanh toán cọc' || statusInfo.text == 'Hết hạn thanh toán cọc') && (
                             <button className="btn btn-outline-secondary btn-sm mt-2 me-2" onClick={() => handleClickOpen(booking.id)} style={{ padding: '0.25rem 0.75rem' }}>
                               Hủy Đơn
                             </button>
                           )}
-                          <button className="btn btn-primary btn-sm mt-2" onClick={() => handleDetail(booking.id)} style={{ padding: '0.25rem 0.75rem' }}>
+                          <button className="btn btn-outline-success btn-sm mt-2" onClick={() => handleDetail(booking.id)} style={{ padding: '0.25rem 0.75rem' }}>
                             Xem chi tiết
                           </button>
+                          {(statusInfo.text === 'Chờ thanh toán cọc') && (
+                            <button className="btn btn-primary btn-sm mt-2 ms-2" style={{ padding: '0.25rem 0.75rem' }}>
+                              Thanh toán
+                            </button>
+                          )}
                         </div>
                       </div>
                     </div>

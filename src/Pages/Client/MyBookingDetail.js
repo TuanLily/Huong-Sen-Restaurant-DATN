@@ -43,12 +43,12 @@ export default function MyBookingDetail() {
     };
 
     const statusMapping = {
-        1: { text: 'Chờ xác nhận', class: 'badge-warning' },
-        2: { text: 'Chờ thanh toán cọc', class: 'badge-success' },
-        3: { text: 'Đã thanh toán cọc', class: 'badge-info' },
-        0: { text: 'Hủy đơn', class: 'badge-danger' },
-        4: { text: 'Chờ thanh toán toàn bộ đơn', class: 'badge-primary' },
-        5: { text: 'Hoàn thành đơn', class: 'badge-primary' }
+        1: { text: 'Chờ thanh toán cọc', class: 'badge bg-warning' },    
+        2: { text: 'Hết hạn thanh toán cọc', class: 'badge bg-info' },
+        3: { text: 'Đã thanh toán cọc', class: 'badge bg-primary' },     
+        0: { text: 'Hủy đơn', class: 'badge bg-danger' },             
+        4: { text: 'Chờ thanh toán toàn bộ đơn', class: 'badge bg-success' },
+        5: { text: 'Hoàn thành đơn', class: 'badge bg-secondary' }       
     };
 
     if (!getUserIdFromToken()) {
@@ -136,7 +136,7 @@ export default function MyBookingDetail() {
                             {/* Thông tin khách hàng */}
                             <div className="invoice-info">
                                 <h3>Thông tin khách hàng</h3>
-                                <p><strong>Tên:</strong> {reservationState.reservation[0].fullname}</p>
+                                <p><strong>Tên:</strong> {reservationState.reservation[0].fullname} | <strong>Mã:</strong> {reservationState.reservation[0].reservation_code ? reservationState.reservation[0].reservation_code : 'Chưa biết'}</p>
                                 <p><strong>Phone:</strong> {reservationState.reservation[0].tel}</p>
                                 <p><strong>Email:</strong> {reservationState.reservation[0].email}</p>
                                 <p><strong>Ngày đặt:</strong> {reservationState.reservation[0].reservation_date.substring(0, 10)} | <strong>Số người:</strong> {reservationState.reservation[0].party_size} | <strong>Số bàn:</strong> {reservationState.reservation[0].tableName ? reservationState.reservation[0].tableName : 'Chưa có'}</p>
